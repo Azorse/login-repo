@@ -1,30 +1,43 @@
-var authController = require('../controllers/authcontroller.js');
-
-module.exports = function(app, passport) {
-
-  app.get("/", authController.index)
-
-  app.get("/home", checkAuthenticated, authController.home)
+module.exports = function(app, passport, userInfo) {
   
-  app.get("/login", authController.login);
+  app.get("/", function(req, res) {
+    res.render("index");
+  });
+
+  app.get("/home", checkAuthenticated, function(req, res) {
+    res.render("home", {name: req.user.firstname})  
+  });
+
   
-  app.get("/register", authController.register)
+  app.get("/login", function(req, res) {
+    res.render("login", {error: req.flash('error')});
+  });
+  
+  app.get("/register", function(req, res) {
+    res.render("register", {error: req.flash('error')});
+  });
 
   app.post('/register', passport.authenticate('local-signup', {
     successRedirect: '/login',
     failureRedirect: '/register',
-    faliureFlash: true
+    failureFlash: true
   }));
 
   app.post("/login", passport.authenticate('local-signin', {
     successRedirect: '/home',
     failureRedirect: '/login',
-    faliureFlash: true
+    failureFlash: true
   }));
 
-  app.get("/lists", checkAuthenticated, authController.lists)
+  app.get("/lists", checkAuthenticated, function(req, res) {
+    res.render("lists");
+  });
 
-  app.get("/logout", authController.logout)
+  app.get("/logout", function(req, res) {
+    req.logout();
+    res.redirect("/login");
+
+  });
 
   function checkAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
